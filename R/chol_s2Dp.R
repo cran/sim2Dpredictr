@@ -1,32 +1,40 @@
 #' Build and Take the Cholesky Decomposition of a Covariance Matrix
 #'
-#' The function first builds a correlation matrix with correlation.builder, converts
-#' that matrix to a covariance matrix if necessary, and then takes the Cholesky decomposition
-#' of the matrix using either base R or the R package \code{spam}. Note that \code{spam}
-#' is particularly effective when the matrix is sparse.
+#' The function first builds a correlation matrix with correlation.builder, 
+#' converts that matrix to a covariance matrix if necessary, and then takes 
+#' the Cholesky decomposition of the matrix using either base R or the R 
+#' package \code{spam}. Note that \code{spam} is particularly effective when
+#' the matrix is sparse.
 #'
-#' @param matrix.type Determines whether to build a covariance matrix, \code{"cov"}, or a
-#' precision matrix, \code{"prec"}. See \code{\link{correlation_builder}{sim2Dpredictr}} and
+#' @param matrix.type Determines whether to build a covariance matrix, 
+#' \code{"cov"}, or a precision matrix, \code{"prec"}. See 
+#' \code{\link{correlation_builder}{sim2Dpredictr}} and
 #' \code{\link{precision_builder}{sim2Dpredictr}} for more details.
 #' @inheritParams correlation_builder
 #' @inheritParams precision_builder
-#' @param use.spam If \code{use.spam = TRUE} then use tools from the R package \code{spam};
-#'  otherwise, base R functions are employed. For large dimension MVN with sparse correlation
-#'  structure, \code{spam} is recommended; otherwise, base R may be faster. Defaults to \code{FALSE}.
-#' @param triangle Determine whether to output an upper (\code{triangle = "upper"}) or
-#' lower (\code{triangle = "lower"}) triangular matrix.
-#' @param sigma Specify the desired standard deviations; the default is 1, in which case the
-#'  Cholesky decomposition is of a correlation matrix. If \code{sigma} != 1, then the
-#'   Cholesky decomposition is of a covariance Matrix.
+#' @param use.spam If \code{use.spam = TRUE} then use tools from the R package
+#' \code{spam}; otherwise, base R functions are employed. For large dimension
+#' MVN with sparse correlation structure, \code{spam} is recommended; 
+#' otherwise, base R may be faster. Defaults to \code{FALSE}.
+#' @param triangle Determine whether to output an upper 
+#' (\code{triangle = "upper"}) or lower (\code{triangle = "lower"}) triangular
+#' matrix.
+#' @param sigma Specify the desired standard deviations; the default is 1, in
+#' which case the Cholesky decomposition is of a correlation matrix. If 
+#' \code{sigma} != 1, then the Cholesky decomposition is of a covariance 
+#' Matrix.
 #'   \itemize{
-#'     \item If sigma is a vector then length(sigma) must be equal to the total number of
-#'      locations, i.e. \eqn{(n.row * n.col) by (n.row * n.col)}
-#'     \item  sigma can take any scalar value when specifying common standard deviation.
+#'     \item If sigma is a vector then length(sigma) must be equal to the
+#'     total number of locations, i.e. \eqn{(n.row * n.col) by (n.row * n.col)}.
+#'     \item sigma can take any scalar value when specifying common standard
+#'     deviation.
 #'   }
-#' @param return.cov,return.prec Logical. When \code{TRUE}, also return the covariance or precision
-#' matrix, respectively. This is recommended when using \code{spam} to generate draws from the MVN.
-#' @param print.R,print.S,print.Q Logical. When \code{TRUE}, then print the correlation, covariance,
-#' or precision matrix before taking the Cholesky decomposition. If \code{sigma} = 1, then S = R.
+#' @param return.cov,return.prec Logical. When \code{TRUE}, also return the 
+#' covariance or precision matrix, respectively. This is recommended when 
+#' using \code{spam} to generate draws from the MVN.
+#' @param print.R,print.S,print.Q Logical. When \code{TRUE}, then print the 
+#' correlation, covariance, or precision matrix before taking the Cholesky 
+#' decomposition. If \code{sigma} = 1, then S = R.
 #' @importFrom Rdpack reprompt
 #' @references
 #' \insertRef{Banerjee:2015}{sim2Dpredictr}
@@ -36,28 +44,35 @@
 #' \insertRef{Rue:2001}{sim2Dpredictr}
 #'
 #' \insertRef{spam}{sim2Dpredictr}
-#' @return Matrix of dimension (n.row x n.col) x (n.row x n.col). If either \code{return.cov} or
-#' \code{return.prec} is \code{TRUE}, then returns a list where the first element is the covariance
-#' or precision matrix, and the second element is the Cholesky factor.
+#' @return Matrix of dimension (n.row x n.col) x (n.row x n.col). If either 
+#' \code{return.cov} or \code{return.prec} is \code{TRUE}, then returns a 
+#' list where the first element is the covariance or precision matrix, and the
+#' second element is the Cholesky factor.
 #' @examples
 #'
 #' ## Use R package spam for Cholesky decomposition
-#' R <- chol_s2Dp(im.res = c(5, 5), matrix.type = "prec",
-#'                use.spam = TRUE, neighborhood = "ar1",
-#'                triangle = "upper")
+#' R_spam <- chol_s2Dp(im.res = c(3, 3), matrix.type = "prec",
+#'                     use.spam = TRUE, neighborhood = "ar1",
+#'                     triangle = "upper")
 #'
 #' ## Use base R for Cholesky decomposition
-#' chol_s2Dp(corr.structure = "ar1", im.res = c(3, 3), rho = 0.15,
-#'         neighborhood = "round", r = 3, use.spam = FALSE)
+#' R_base <- chol_s2Dp(corr.structure = "ar1", 
+#'                     im.res = c(3, 3), rho = 0.15,
+#'                     neighborhood = "round", 
+#'                     r = 3, use.spam = FALSE)
 #'
 #' ## Specify standard deviations instead of default of sigma = 1.
-#' chol_s2Dp(corr.structure = "ar1",im.res = c(3, 3), rho = 0.15,
-#'         neighborhood = "round", r = 3, sigma = runif(9, 1.1, 4))
-#'
+#' R_sd <- chol_s2Dp(corr.structure = "ar1",
+#'                   im.res = c(3, 3), rho = 0.15,
+#'                   neighborhood = "round", r = 3, 
+#'                   sigma = runif(9, 1.1, 4))
+#' \dontrun{
 #' ## Print options ON
-#' chol_s2Dp(corr.structure = "ar1", im.res = c(3, 3), rho = 0.15,
-#'           sigma = 1:9, neighborhood = "round", r = 3,
-#'           print.R = TRUE, print.S = TRUE)
+#' R_pr_on <- chol_s2Dp(corr.structure = "ar1", 
+#'                      im.res = c(3, 3), rho = 0.15,
+#'                      sigma = 1:9, neighborhood = "round", 
+#'                      r = 3, print.R = TRUE, print.S = TRUE)
+#'  }
 #'
 #' @export
 chol_s2Dp <- function(matrix.type = "cov", im.res, use.spam = FALSE,
@@ -84,7 +99,8 @@ chol_s2Dp <- function(matrix.type = "cov", im.res, use.spam = FALSE,
                                  rho = rho, phi = phi,
                                  corr.min = corr.min,
                                  im.res = im.res, round.d = round.d,
-                                 w = w, h = h, r = r, neighborhood = neighborhood,
+                                 w = w, h = h, r = r, 
+                                 neighborhood = neighborhood,
                                  print.all = print.all)
       }
     } else if (corr.structure %in% c("exponential", "gaussian")) {
@@ -95,14 +111,15 @@ chol_s2Dp <- function(matrix.type = "cov", im.res, use.spam = FALSE,
                                corr.min = corr.min,
                                rho = rho, phi = phi,
                                im.res = im.res, round.d = round.d,
-                               w = w, h = h, r = r, neighborhood = neighborhood,
+                               w = w, h = h, r = r, 
+                               neighborhood = neighborhood,
                                print.all = print.all)
     }
     if (print.R == TRUE) {
       cat("Below lies the correlation matrix. \n")
       print(R)
     }
-    if ( identical(sigma, 1) | identical(sigma, rep(1, p)) ){S = R}
+    if ( identical(sigma, 1) | identical(sigma, rep(1, p)) ){S <- R}
     # if not using unit variance then need separate covariance matrix
     else {
       D <- diag(sigma, nrow = p, ncol = p)
